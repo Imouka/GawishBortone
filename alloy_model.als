@@ -46,7 +46,7 @@ A third party can make has much requests has he wants. Thoses requests can be an
 */
 	Ind_request_issued: set Individual_Request ,
 	Anonym_request_issued: set Anonymised_Request
-/*An individual also has a name, an identificator, an adress, a phone number etc
+/*A third party also has a name, an identificator, an adress, a phone number etc
 but as the goal of this model is to verify the interactions bettwen the individuals, the third parties and the requests,
  we thought that adding these attributes would not be relevant because it would not prove anything and 
 it would make reading more difficult */}
@@ -144,12 +144,12 @@ fact data_consistency_anonymous{
 /**************************************************************************/
 
 assert No_access_data_if_refused {
-/*third party cannot access an individual result if his individual request has been refused*/
-	no th:Third_party | th.Ind_request_issued.accepted=False and th.Ind_request_issued.result.data != none}
+/*third party can access an individual result if his individual request has been refused*/
+	no th:Third_party | some req:th.Ind_request_issued| req.accepted=False and req.result.data != none}
 
 assert No_access_data_if_less_than_two_ind {
-/*third party cannot acces anonymised result if anonymised request concerns less than two individuals*/
-	no th:Third_party | #th.Anonym_request_issued.Anonymised_Req_concern<2 and th.Anonym_request_issued.result.data != none}
+/*third party can acces anonymised result if anonymised request concerns less than two individuals*/
+	no th:Third_party |  some req:th.Anonym_request_issued| #req.Anonymised_Req_concern<2 and req.result.data != none}
 
 /**************************************************************************/
 /********************************   PREDICATES    *****************************/
@@ -191,7 +191,7 @@ must be issued by three different third parties. Only one of the individual requ
 
 --run show2 for 4
 --run show3 for 5
-run show4 for 5
+--run show4 for 5
 
 --check No_access_data_if_refused
---check  No_access_data_if_less_than_two_ind
+check  No_access_data_if_less_than_two_ind
