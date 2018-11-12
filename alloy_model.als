@@ -11,15 +11,15 @@ and must produce one if accepted
 - accepted = The status of the resquest (True is it has been accepted, False otherwise).
 
 There are two types of requests :
- - anonymised request
+ - anonymized request
  - individual request								 
 */
 	accepted : one Bool,}
 
 sig Result {/* the result of a request exists only if the request has been accepted*/} 
 
-sig Anonymised_Result extends Result {/* the result of a request exists only if the request has been accepted*/
-	data: some Data, /*an anonymised result contains the data of all the individuals concerned by the request*/} 
+sig Anonymized_Result extends Result {/* the result of a request exists only if the request has been accepted*/
+	data: some Data, /*an anonymized result contains the data of all the individuals concerned by the request*/} 
 
 sig Individual_Result extends Result {/* the result of a request exists only if the request has been accepted*/
 	data: one Data,/*an individual result contains the data the individual concerned by the request*/} 
@@ -35,17 +35,17 @@ sig Individual_Request extends Request {
 	Individual_Req_concern: one Individual,
 	result:lone Individual_Result}
 
-sig Anonymised_Request extends Request {
-/* An anonymised request is a request concerning a group of individuals*/
-	Anonymised_Req_concern: some Individual,
-	result:lone Anonymised_Result}
+sig Anonymized_Request extends Request {
+/* An anonymized request is a request concerning a group of individuals*/
+	Anonymized_Req_concern: some Individual,
+	result:lone Anonymized_Result}
 
 sig Third_party extends User {
 /* A third party is a type of user that is able to make requests.
-A third party can make has much requests has he wants. Thoses requests can be anonymised requests or individual requests. 
+A third party can make has much requests has he wants. Thoses requests can be anonymized requests or individual requests. 
 */
 	Ind_request_issued: set Individual_Request ,
-	Anonym_request_issued: set Anonymised_Request
+	Anonym_request_issued: set Anonymized_Request
 /*A third party also has a name, an identificator, an adress, a phone number etc
 but as the goal of this model is to verify the interactions bettwen the individuals, the third parties and the requests,
  we thought that adding these attributes would not be relevant because it would not prove anything and 
@@ -79,7 +79,7 @@ all req:Request, ind:Individual | (req in ind.Request_received) iff (ind in req.
 
 fact request_must_be_linked_to_third_party{
 /* A request must be issued by a third party*/
-(all req:Individual_Request | some th:Third_party| req in th.Ind_request_issued) and (all req:Anonymised_Request | some th:Third_party| req in th.Anonym_request_issued)}
+(all req:Individual_Request | some th:Third_party| req in th.Ind_request_issued) and (all req:Anonymized_Request | some th:Third_party| req in th.Anonym_request_issued)}
 
 /**ABOUT THIRD PARTIES**********/
 
@@ -93,8 +93,8 @@ all third, third' : Third_party | no req : Request | third != third' and req in 
 
 fact unique_result_anon {
 /*two disjoint requests cannot produce the same result
-Indeed, any anonymised request produces its own result*/ 
-all req, req' : Anonymised_Request | no res:Anonymised_Result | req!=req' and res in (req.result & req'.result)}
+Indeed, any anonymized request produces its own result*/ 
+all req, req' : Anonymized_Request | no res:Anonymized_Result | req!=req' and res in (req.result & req'.result)}
 
 fact unique_result_ind {
 /*two disjoint requests cannot produce the same result
@@ -102,22 +102,22 @@ Indeed, any  individual request produces its own result*/
 all req, req' : Individual_Request | no res:Individual_Result | req!=req' and res in (req.result & req'.result)}
 
 fact acceptance_implies_result_anon {
-/* (If an anonymised request is accepted THEN the request must produce a result) AND (if an anonymised request is refused THEN it cannot produce a result)*/
-all req : Anonymised_Request | (req.accepted = True iff req.result != none)  and (req.accepted =False iff req.result = none)}
+/* (If an anonymized request is accepted THEN the request must produce a result) AND (if an anonymized request is refused THEN it cannot produce a result)*/
+all req : Anonymized_Request | (req.accepted = True iff req.result != none)  and (req.accepted =False iff req.result = none)}
 
 fact acceptance_implies_result_ind {
 /* (If an individual request is accepted THEN the request must produce a result) AND (if an individual request is refused THEN it cannot produce a result)*/
 all req :Individual_Request | (req.accepted = True iff req.result != none)  and (req.accepted =False iff req.result = none)}
 
-fact individuals_concerned_by_Anonymised_request {
-/* An anonymised request must concern at least 1000 individuals to be accepted.
-As Alloy does not allow this type of constraint, we chose to consider that an anonymised request must concern at least 2 individuals
+fact individuals_concerned_by_Anonymized_request {
+/* An anonymized request must concern at least 1000 individuals to be accepted.
+As Alloy does not allow this type of constraint, we chose to consider that an anonymized request must concern at least 2 individuals
 to be accepted*/
-(all req: Anonymised_Request | req.accepted=True iff #req.Anonymised_Req_concern >=2) }
+(all req: Anonymized_Request | req.accepted=True iff #req.Anonymized_Req_concern >=2) }
 
 fact result_produced_by_request{
 /* A result cannot exists on his own, it must be produced by a request*/
-(all res:Anonymised_Result | some req:Anonymised_Request| res=req.result ) and (all res:Individual_Result | some req:Individual_Request| res=req.result )}
+(all res:Anonymized_Result | some req:Anonymized_Request| res=req.result ) and (all res:Individual_Result | some req:Individual_Request| res=req.result )}
 
 
 /** ABOUT DATA************/
@@ -135,8 +135,8 @@ fact data_consistency_ind {
 (all req:Individual_Request |req.accepted=True implies (req.result.data=req.Individual_Req_concern.data))}
 
 fact data_consistency_anonymous{
-/* The data of an anonymised_result is the data of the individuals*/
-(all req:Anonymised_Request | all ind:req.Anonymised_Req_concern |ind.data in (req.result.data) iff req.accepted = True)}
+/* The data of an anonymized_result is the data of the individuals*/
+(all req:Anonymized_Request | all ind:req.Anonymized_Req_concern |ind.data in (req.result.data) iff req.accepted = True)}
 
 
 /**************************************************************************/
@@ -148,28 +148,28 @@ assert No_access_data_if_refused {
 	no th:Third_party | some req:th.Ind_request_issued| req.accepted=False and req.result.data != none}
 
 assert No_access_data_if_less_than_two_ind {
-/*third party can acces anonymised result if anonymised request concerns less than two individuals*/
-	no th:Third_party |  some req:th.Anonym_request_issued| #req.Anonymised_Req_concern<2 and req.result.data != none}
+/*third party can acces anonymized result if anonymized request concerns less than two individuals*/
+	no th:Third_party |  some req:th.Anonym_request_issued| #req.Anonymized_Req_concern<2 and req.result.data != none}
 
 /**************************************************************************/
 /********************************   PREDICATES    *****************************/
 /**************************************************************************/
 pred show1{}
 
-pred show2 {/* We want to see two anonymised requests and no individual requests. The two anonymised requests
-must be issued by two different third parties. One of the anonymised request must be accepted and the other
+pred show2 {/* We want to see two anonymized requests and no individual requests. The two anonymized requests
+must be issued by two different third parties. One of the anonymized request must be accepted and the other
 must be refused*/
-					#Anonymised_Request=2
+					#Anonymized_Request=2
 					 #Individual_Request=0
 					#Third_party = 2
-					(some gr:Anonymised_Request | #gr.Anonymised_Req_concern>=2)
-					(some gr':Anonymised_Request | #gr'.Anonymised_Req_concern<2)
+					(some gr:Anonymized_Request | #gr.Anonymized_Req_concern>=2)
+					(some gr':Anonymized_Request | #gr'.Anonymized_Req_concern<2)
 					(all th:Third_party | #th.Anonym_request_issued = 1)
 				 } 
 
-pred show3 {/* We want to see three indivdual requests and no anonymised requests. The thre individual requests
+pred show3 {/* We want to see three indivdual requests and no anonymized requests. The thre individual requests
 must be issued by three different third parties. Only one of the individual requests must be refused.*/
-					#Anonymised_Request=0
+					#Anonymized_Request=0
 					 #Individual_Request=3
 					#Third_party=3
 					#Individual=2
@@ -179,14 +179,14 @@ must be issued by three different third parties. Only one of the individual requ
 				 } 
 
 
-pred show4{/* We want to see three indivdual requests and no anonymised requests. The thre individual requests
+pred show4{/* We want to see three indivdual requests and no anonymized requests. The thre individual requests
 must be issued by three different third parties. Only one of the individual requests must be refused.*/
-					#Anonymised_Request=1
+					#Anonymized_Request=1
 					# Individual_Request=1
 					#Third_party=1	
 					#Individual=3
 					(one req:Individual_Request | req.accepted=True)
-					(one req:Anonymised_Request | req.accepted=True)
+					(one req:Anonymized_Request | req.accepted=True)
 				 } 
 
 --run show2 for 4
