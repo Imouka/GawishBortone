@@ -4,7 +4,7 @@ open util/boolean
 /**************************************************************************/
 /**************************           SIGNATURES         *****************************/
 /**************************************************************************/
-sig Request {
+abstract sig Request {
 /* A request has tree attributes: 
 - the result = The result produced by the request. A request can produce no result if it has been refused, 
 and must produce one if accepted
@@ -16,7 +16,7 @@ There are two types of requests :
 */
 	accepted : one Bool,}
 
-sig Result {/* the result of a request exists only if the request has been accepted*/} 
+abstract sig Result {/* the result of a request exists only if the request has been accepted*/} 
 
 sig Anonymized_Result extends Result {/* the result of a request exists only if the request has been accepted*/
 	data: some Data, /*an anonymized result contains the data of all the individuals concerned by the request*/} 
@@ -24,9 +24,9 @@ sig Anonymized_Result extends Result {/* the result of a request exists only if 
 sig Individual_Result extends Result {/* the result of a request exists only if the request has been accepted*/
 	data: one Data,/*an individual result contains the data the individual concerned by the request*/} 
 
-sig User {/* a user can be an Individual or a third party*/}
+abstract sig User {/* a user can be an Individual or a third party*/}
 
-sig Data{/* the attributes of data (which are the location and health data) are not specified as it would it would unnecessarily
+ sig Data{/* the attributes of data (which are the location and health data) are not specified as it would it would unnecessarily
  overload the model */
 }
 
@@ -189,9 +189,9 @@ must be issued by three different third parties. Only one of the individual requ
 					(one req:Anonymized_Request | req.accepted=True)
 				 } 
 
---run show2 for 4
+run show2 for 4
 --run show3 for 5
 --run show4 for 5
 
 --check No_access_data_if_refused
-check  No_access_data_if_less_than_two_ind
+--check  No_access_data_if_less_than_two_ind
